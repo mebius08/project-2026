@@ -67,6 +67,50 @@ pytest
 python -m app.main
 ```
 
+## Run for development
+
+From the project root on macOS (or Linux):
+
+```bash
+docker build -t dota-analytics-web:dev .
+docker run --rm --name dota-analytics-dev \
+  -p 127.0.0.1:8001:8000 \
+  -v "$(pwd)/app:/srv/app/app:ro" \
+  dota-analytics-web:dev \
+  python -m uvicorn app.api:create_app --factory \
+  --host 0.0.0.0 --port 8000 --reload --reload-dir /srv/app/app
+```
+
+Open http://127.0.0.1:8001/. Source and Jinja templates are bind-mounted;
+Python changes reload the development server without rebuilding the image.
+Templates refresh on the next request. This command uses a disposable SQLite
+database inside the container; existing host databases are not mounted.
+Rebuild after changing Python dependencies.
+
+The `/` handler passes the project name and description to
+`app/templates/index.html`, which includes the existing match browser and loads
+Bootstrap 5.3.8 before its custom styles.
+
+### User features and routes
+
+Users can browse stored matches, open a match's details, refresh the archive,
+inspect economy history and team point-of-view observations, and select a game
+time to compare available historical observations. The interface reports empty
+datasets and unavailable data instead of fabricating observations.
+
+| Method | URL | User action | Status |
+|---|---|---|---|
+| GET | `/` | Open the match browser | Implemented |
+| GET | `/api/matches` | List stored matches | Implemented |
+| GET | `/api/matches/{source}/{source_match_id}` | Open one match | Implemented |
+| GET | `/api/matches/{source}/{source_match_id}/economy` | Inspect economy history | Implemented |
+| GET | `/api/matches/{source}/{source_match_id}/pov` | Inspect team observations | Implemented |
+
+The current web API is read-only. Match imports run through existing CLI tools;
+no POST, PUT or DELETE endpoints are needed for this first page. Live match
+selection and prediction remain planned features that require reliable source
+coverage and validation before their API contracts are defined.
+
 ## Analytics REST API
 
 From the repository root, using the project's Python environment:

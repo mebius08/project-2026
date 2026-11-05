@@ -6,6 +6,7 @@ from typing import Annotated, Literal, Protocol, cast, runtime_checkable
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 from app.history.domain import HistoricalMatch
@@ -13,6 +14,14 @@ from app.storage import SQLiteRepository
 
 
 DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "autopilot.db"
+PROJECT_NAME = "Dota 2 Analytics"
+PROJECT_DESCRIPTION = (
+    "Команды, турниры и результаты сохранённых матчей. "
+    "Отправная точка для исследования игры."
+)
+templates = Jinja2Templates(
+    directory=[Path(__file__).with_name("templates"), Path(__file__).parent]
+)
 router = APIRouter(prefix="/api")
 
 
@@ -150,9 +159,14 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
     application.include_router(router)
 
     @application.get("/", response_class=HTMLResponse)
-    def index() -> str:
-        return Path(__file__).with_name("web").joinpath("index.html").read_text(
-            encoding="utf-8"
+    def index(request: Request) -> HTMLResponse:
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={
+                "project_name": PROJECT_NAME,
+                "project_description": PROJECT_DESCRIPTION,
+            },
         )
 
     return application
