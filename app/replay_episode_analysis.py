@@ -233,7 +233,8 @@ def render_report(compact, windows, rows):
     ]
     for r in selected:
         d = pairs[r["decision_grid_time_seconds"], "DIRE"]
-        coverage = lambda x: "/".join(str(x["pov_" + k]) for k in ("visible_enemy_count", "visible_enemy_with_position_count", "hidden_enemy_count", "unknown_enemy_count"))
+        def coverage(x):
+            return "/".join(str(x["pov_" + k]) for k in ("visible_enemy_count", "visible_enemy_with_position_count", "hidden_enemy_count", "unknown_enemy_count"))
         lines.append("| " + " | ".join([
             f"{r['decision_grid_time_seconds']}–{r['eval_end_grid_time_seconds']}", r["window_kind"],
             str(r["decision_game_time_seconds"]),

@@ -1,4 +1,8 @@
-# Dota Betting Autopilot
+# Dota 2 Analytics — project-2026
+
+Course repository: [mebius08/project-2026](https://github.com/mebius08/project-2026).
+Course work is developed on the `university` branch. An existing local checkout
+may still be named `dota-betting-autopilot`; its folder does not need to be moved.
 
 ## About
 
@@ -7,12 +11,39 @@ professional Dota 2 matches. The current web application serves a historical
 match browser at `/` and a JSON API at `/api/matches`, using FastAPI and either
 SQLite or PostgreSQL. It runs in Docker; the minimal web dependencies are pinned
 in `requirements-web.txt`. The project performs research and paper simulations,
-without executing real bets. The proposed course topic is **Dota 2 match
-analytics and prediction**; agreement with the instructor is still required.
+without executing real bets. The course topic is **Dota 2 match analytics and prediction**. Course
+requirements are implemented in this main repository, as agreed with the instructor.
 
-Practice L3 container check (2026-10-29): the Dockerfile built successfully;
-`GET /` returned HTTP 200 with HTML and `GET /api/matches` returned HTTP 200 with
-an empty JSON array using the container's isolated SQLite database.
+The course implementation and task mapping are documented in
+[Practices L2-L6](docs/university-practices.md). FastAPI is used as permitted in
+L4/L5; the container listens on **5001**. The existing host port stays **8000**.
+
+For a small web-only development environment (no replay/ML dependencies):
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-web-dev.txt
+.venv/bin/python app.py --reload
+```
+
+Open http://127.0.0.1:5001/ or the server-rendered
+http://127.0.0.1:5001/archive?team=Spirit&limit=20. An empty database is supported.
+The launcher does not read `.env`; SQLite remains the default outside Compose.
+
+```bash
+.venv/bin/python -m ruff check .
+.venv/bin/python -m pytest -q tests/test_api.py tests/test_check_api.py \
+  tests/test_postgres_api.py tests/test_course_web.py tests/test_text_utils.py \
+  tests/test_prices.py tests/test_stats.py tests/test_app.py
+```
+
+`tests/test_app.py` contains four real HTTP integration tests. Without
+`DOTA_TEST_BASE_URL` they skip, so unit tests do not require a running server.
+To check a Docker container on host port 8080, set
+`DOTA_TEST_BASE_URL=http://127.0.0.1:8080` and run
+`.venv/bin/python -m pytest tests/test_app.py -v`. CI sets the URL after starting
+the container and passing its readiness check; see the L6 section in the linked
+practice guide for the full local Docker command.
 
 The target product is a universal, on-demand, medium-frequency LIVE predictor
 for professional Dota 2. The user selects an individual map/match (distinct from
@@ -52,7 +83,7 @@ Use an official permitted API adapter only.
 ## Quick Start
 
 ```bash
-cd dota-betting-autopilot
+cd project-2026
 pip install -e ".[dev]"
 pytest
 python -m app.main
@@ -61,7 +92,7 @@ python -m app.main
 If you prefer `requirements.txt`:
 
 ```bash
-cd dota-betting-autopilot
+cd project-2026
 pip install -r requirements.txt
 pytest
 python -m app.main
@@ -69,27 +100,30 @@ python -m app.main
 
 ## Run for development
 
-From the project root on macOS (or Linux):
+From the project root on macOS (or Linux), with sufficient free disk space:
 
 ```bash
 docker build -t dota-analytics-web:dev .
 docker run --rm --name dota-analytics-dev \
-  -p 127.0.0.1:8001:8000 \
+  -p 127.0.0.1:8001:5001 \
   -v "$(pwd)/app:/srv/app/app:ro" \
+  -v "$(pwd)/app.py:/srv/app/app.py:ro" \
   dota-analytics-web:dev \
-  python -m uvicorn app.api:create_app --factory \
-  --host 0.0.0.0 --port 8000 --reload --reload-dir /srv/app/app
+  python app.py --host 0.0.0.0 --port 5001 --reload
 ```
 
-Open http://127.0.0.1:8001/. Source and Jinja templates are bind-mounted;
-Python changes reload the development server without rebuilding the image.
-Templates refresh on the next request. This command uses a disposable SQLite
-database inside the container; existing host databases are not mounted.
-Rebuild after changing Python dependencies.
+Open http://127.0.0.1:8001/. Python source, templates and static assets are
+bind-mounted. Python changes reload the development server; template/CSS/image
+changes are visible after refreshing the page. This uses disposable SQLite
+storage inside the container, with no host database mounted. Rebuild after
+changing dependencies. The ingestion script's 40 GiB reserve applies to replay
+downloads, not to these web-image builds.
 
 The `/` handler passes the project name and description to
-`app/templates/index.html`, which includes the existing match browser and loads
-Bootstrap 5.3.8 before its custom styles.
+`app/templates/index.html`. Bootstrap 5.3.8 loads before the project's
+`/static/css/style.css`; the local SVG mascot is served from `/static/img/`.
+`/archive` renders existing matches with Jinja `{% for %}` and supports escaped
+team search plus validated `limit=1..200`.
 
 ### User features and routes
 
@@ -101,6 +135,7 @@ datasets and unavailable data instead of fabricating observations.
 | Method | URL | User action | Status |
 |---|---|---|---|
 | GET | `/` | Open the match browser | Implemented |
+| GET | `/archive?team=...&limit=50` | Browse/filter HTML archive without JavaScript | Implemented |
 | GET | `/api/matches` | List stored matches | Implemented |
 | GET | `/api/matches/{source}/{source_match_id}` | Open one match | Implemented |
 | GET | `/api/matches/{source}/{source_match_id}/economy` | Inspect economy history | Implemented |
@@ -149,7 +184,7 @@ From the repository root, with Docker running:
 docker build -t dota-analytics-web .
 docker volume create dota-analytics-data
 docker run --rm -d --name dota-analytics \
-  -p 127.0.0.1:8000:8000 \
+  -p 127.0.0.1:8000:5001 \
   --mount type=volume,source=dota-analytics-data,target=/data \
   -e DOTA_ANALYTICS_DB_PATH=/data/history.sqlite3 \
   dota-analytics-web
@@ -162,7 +197,7 @@ from the host's project Python environment:
 python tools/check_api.py --base-url http://127.0.0.1:8000
 ```
 
-The image uses official Python 3.13 slim and installs FastAPI, Uvicorn, the
+The image uses official Python 3.14 slim and installs FastAPI, Uvicorn, the
 PostgreSQL driver and their runtime dependencies from `requirements-web.txt`.
 Local databases, replays, caches and research outputs are excluded from the build context.
 A new volume starts with an empty database; no match records are generated.
@@ -180,9 +215,9 @@ that user. Server logs are available with `docker logs dota-analytics`.
 
 ### Web image in GitHub Container Registry
 
-After a push to `university`, the `University web CI` workflow publishes
+After a push to `university`, `.github/workflows/ci.yml` (`University web CI`) publishes
 `ghcr.io/mebius08/dota-analytics-web` only after the existing lint, focused tests,
-Docker build and container HTTP checks pass. Pull requests run CI without
+course unit tests, Docker build and real container HTTP pytest checks pass. Pull requests run CI without
 publishing. A separate publication job builds the checked commit when its SHA
 tag does not yet exist, without repeating the tests. It uses only the built-in
 `GITHUB_TOKEN` with `contents: read` and `packages: write`.

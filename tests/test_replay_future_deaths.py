@@ -170,13 +170,19 @@ def test_missing_feature_cells_stay_missing_without_imputation():
 @pytest.mark.parametrize("problem", ["eof", "lineage", "frame_tick", "duplicate_pov", "missing_team", "conflicting_death"])
 def test_bad_identity_clocks_counts_or_duplicate_data_fail_explicitly(problem):
     pov, deaths, visibility = _inputs(events=[_event(20)])
-    if problem == "eof": deaths["eof_players"][0]["deaths"] += 1
-    elif problem == "lineage": visibility["replay_sha256"] = "b" * 64
-    elif problem == "frame_tick": pov[0]["replay_tick"] = "999"
-    elif problem == "duplicate_pov": pov.append(deepcopy(pov[0]))
-    elif problem == "missing_team": pov.pop()
+    if problem == "eof":
+        deaths["eof_players"][0]["deaths"] += 1
+    elif problem == "lineage":
+        visibility["replay_sha256"] = "b" * 64
+    elif problem == "frame_tick":
+        pov[0]["replay_tick"] = "999"
+    elif problem == "duplicate_pov":
+        pov.append(deepcopy(pov[0]))
+    elif problem == "missing_team":
+        pov.pop()
     else:
-        event = deepcopy(deaths["hero_deaths"][0]); event["frame_game_time_seconds"] = 20.01
+        event = deepcopy(deaths["hero_deaths"][0])
+        event["frame_game_time_seconds"] = 20.01
         deaths["hero_deaths"].append(event)
     with pytest.raises(ValueError):
         build_future_death_rows(pov, deaths, visibility)

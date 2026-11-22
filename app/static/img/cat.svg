@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Кот">
+  <path d="M12 27 9 6l18 12h10L55 6l-3 21v15c0 12-40 12-40 0Z" fill="#e8c995" stroke="#172f2c" stroke-width="3" stroke-linejoin="round"/>
+  <path d="m14 13 3 12 8-5m25-7-3 12-8-5" fill="#d7a997"/>
+  <ellipse cx="23" cy="32" rx="3" ry="4" fill="#172f2c"/>
+  <ellipse cx="41" cy="32" rx="3" ry="4" fill="#172f2c"/>
+  <path d="m28 40 4 4 4-4-4-2Z" fill="#9c5862"/>
+  <path d="M32 44v4m-6 0q6 5 12 0M8 37l14 3M7 44l15-1m34-6-14 3m15 4-15-1" fill="none" stroke="#172f2c" stroke-width="2" stroke-linecap="round"/>
+</svg>

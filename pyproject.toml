@@ -35,13 +35,16 @@ include = ["app*"]
 exclude = ["tests*"]
 
 [tool.setuptools.package-data]
-"app" = ["web/*.html", "templates/*.html"]
+"app" = ["web/*.html", "templates/*.html", "static/css/*.css", "static/img/*.svg"]
 "app.config" = ["tournament_allowlist.yaml"]
 "app.storage" = ["*.sql"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = [
+    "integration: external HTTP checks, enabled with DOTA_TEST_BASE_URL",
+]
 
 [tool.ruff]
 line-length = 88

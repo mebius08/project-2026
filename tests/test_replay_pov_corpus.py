@@ -93,14 +93,20 @@ def test_duplicate_inputs_or_observations_fail_before_writing(tmp_path, kind):
 @pytest.mark.parametrize('kind', ['missing_team', 'invalid_team', 'time', 'tick', 'sha', 'same_replay_other_match', 'nonmonotonic'])
 def test_incomplete_pairs_and_identity_or_clock_conflicts_fail(tmp_path, kind):
     rows = _pair()
-    if kind == 'missing_team': rows.pop()
-    elif kind == 'invalid_team': rows[1]['pov_team'] = 'GLOBAL'
-    elif kind == 'time': rows[1] = _pair(time='10.0003')[1]
-    elif kind == 'tick': rows[1]['replay_tick'] = '1301'
-    elif kind == 'sha': rows[1]['replay_sha256'] = 'b' * 64
+    if kind == 'missing_team':
+        rows.pop()
+    elif kind == 'invalid_team':
+        rows[1]['pov_team'] = 'GLOBAL'
+    elif kind == 'time':
+        rows[1] = _pair(time='10.0003')[1]
+    elif kind == 'tick':
+        rows[1]['replay_tick'] = '1301'
+    elif kind == 'sha':
+        rows[1]['replay_sha256'] = 'b' * 64
     elif kind == 'same_replay_other_match':
         later = _pair(456)
-        for row in later: row['replay_sha256'] = rows[0]['replay_sha256']
+        for row in later:
+            row['replay_sha256'] = rows[0]['replay_sha256']
         rows += later
     else:
         rows += _pair(time='20.0002', tick=1200)
@@ -116,21 +122,33 @@ def test_incomplete_pairs_and_identity_or_clock_conflicts_fail(tmp_path, kind):
 def test_invalid_targets_statuses_or_window_boundaries_are_rejected(tmp_path, kind):
     rows = _pair()
     row = rows[0]
-    if kind == 'unknown_status': row['label_status_30s'] = 'OK'
-    elif kind == 'empty_valid': row['own_deaths_next_30s'] = ''
-    elif kind == 'negative': row['own_deaths_next_30s'] = '-1'
-    elif kind == 'noninteger': row['own_deaths_next_30s'] = '1.5'
-    elif kind == 'wrong_any': row['any_death_next_30s'] = '0'
-    elif kind == 'not_swapped': row['enemy_deaths_next_30s'] = '0'
-    elif kind == 'different_status': rows[1].update({k: v for k, v in _pair(statuses=('VALID', 'CENSORED'))[1].items()})
-    elif kind == 'wrong_window': row['label_window_end_30s'] = '40.000200000000001'
-    elif kind == 'audit_length': row['label_ambiguous_event_count_30s'] = '1'
+    if kind == 'unknown_status':
+        row['label_status_30s'] = 'OK'
+    elif kind == 'empty_valid':
+        row['own_deaths_next_30s'] = ''
+    elif kind == 'negative':
+        row['own_deaths_next_30s'] = '-1'
+    elif kind == 'noninteger':
+        row['own_deaths_next_30s'] = '1.5'
+    elif kind == 'wrong_any':
+        row['any_death_next_30s'] = '0'
+    elif kind == 'not_swapped':
+        row['enemy_deaths_next_30s'] = '0'
+    elif kind == 'different_status':
+        rows[1].update({k: v for k, v in _pair(statuses=('VALID', 'CENSORED'))[1].items()})
+    elif kind == 'wrong_window':
+        row['label_window_end_30s'] = '40.000200000000001'
+    elif kind == 'audit_length':
+        row['label_ambiguous_event_count_30s'] = '1'
     elif kind == 'valid_ambiguity':
         row.update(label_ambiguous_event_count_30s='1', label_ambiguous_events_30s='[{}]')
-    elif kind == 'decreasing_horizon': row['own_deaths_next_60s'] = '1'
+    elif kind == 'decreasing_horizon':
+        row['own_deaths_next_60s'] = '1'
     elif kind == 'nonempty_censored':
-        rows = _pair(statuses=('VALID', 'CENSORED')); rows[0]['any_death_next_60s'] = '0'
-    else: rows = _pair(statuses=('CENSORED', 'VALID'))
+        rows = _pair(statuses=('VALID', 'CENSORED'))
+        rows[0]['any_death_next_60s'] = '0'
+    else:
+        rows = _pair(statuses=('CENSORED', 'VALID'))
     with pytest.raises(ValueError):
         build_corpus([_write(tmp_path / 'input.csv', rows)], tmp_path / 'out')
 
@@ -165,7 +183,8 @@ def test_incompatible_feature_types_are_rejected_without_coercion(tmp_path, colu
 @pytest.mark.parametrize('column', ['global_hidden_x', 'unknown_feature'])
 def test_extra_columns_cannot_enter_feature_contract(tmp_path, column):
     rows = _pair()
-    for row in rows: row[column] = '1234'
+    for row in rows:
+        row[column] = '1234'
     source = _write(tmp_path / 'input.csv', rows, (*COLUMNS, column))
     with pytest.raises(ValueError, match='schema'):
         build_corpus([source], tmp_path / 'out')

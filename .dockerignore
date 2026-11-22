@@ -5,6 +5,7 @@
 !Dockerfile
 !.dockerignore
 !requirements-web.txt
+!app.py
 !app/
 !app/**
 

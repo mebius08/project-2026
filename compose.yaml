@@ -4,7 +4,7 @@ services:
   web:
     build: .
     ports:
-      - "127.0.0.1:${DOTA_ANALYTICS_WEB_PORT:-8000}:8000"
+      - "127.0.0.1:${DOTA_ANALYTICS_WEB_PORT:-8000}:5001"
     environment:
       DOTA_ANALYTICS_DB_BACKEND: postgresql
       POSTGRES_HOST: db
@@ -20,7 +20,7 @@ services:
         - CMD
         - python
         - -c
-        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/matches', timeout=3).read()
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/api/matches', timeout=3).read()
       interval: 5s
       timeout: 5s
       retries: 10

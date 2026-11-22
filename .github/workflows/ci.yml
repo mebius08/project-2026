@@ -23,21 +23,16 @@ jobs:
 
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.13"
+          python-version: "3.14"
 
       - name: Install minimal web and test dependencies
-        run: >-
-          python -m pip install -r requirements-web.txt
-          httpx==0.28.1 pytest==8.4.2 ruff==0.15.10
+        run: python -m pip install -r requirements-web-dev.txt
 
-      - name: Ruff web code and tests
-        run: >-
-          python -m ruff check app/api.py tools/check_api.py
-          app/storage/postgres.py tests/test_api.py tests/test_check_api.py
-          tests/test_postgres_api.py
-
-      - name: Focused API and client tests
-        run: python -m pytest -q tests/test_api.py tests/test_check_api.py tests/test_postgres_api.py
+      - name: Ruff repository and course exception/import checks
+        run: |
+          python -m ruff check .
+          python -m ruff check --select I,BLE001 app.py stats.py text_utils.py prices.py \
+            tests/test_stats.py tests/test_text_utils.py tests/test_prices.py tests/test_course_web.py tests/test_app.py
 
       - name: Build web image
         run: docker build --tag dota-analytics-web:ci .
@@ -45,8 +40,9 @@ jobs:
       - name: Start container with disposable SQLite volume
         run: >-
           docker run --detach --name dota-analytics-ci
-          --publish 127.0.0.1:18000:8000
+          --publish 127.0.0.1:18000:5001
           --mount type=volume,destination=/data
+          --env DOTA_ANALYTICS_DB_BACKEND=sqlite
           --env DOTA_ANALYTICS_DB_PATH=/data/ci.sqlite3
           dota-analytics-web:ci
 
@@ -66,6 +62,14 @@ jobs:
           done
           echo "Container did not pass the HTTP checks within 15 attempts."
           exit 1
+
+      - name: Unit and Docker HTTP integration tests
+        env:
+          DOTA_TEST_BASE_URL: http://127.0.0.1:18000
+        run: >-
+          python -m pytest -v tests/test_api.py tests/test_check_api.py tests/test_postgres_api.py
+          tests/test_course_web.py tests/test_text_utils.py tests/test_prices.py tests/test_stats.py
+          tests/test_app.py
 
       - name: Docker logs on failure
         if: failure()

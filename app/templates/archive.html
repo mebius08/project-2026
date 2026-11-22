@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>HTML-архив · {{ project_name }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+        crossorigin="anonymous">
+  <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+</head>
+<body>
+  <main class="container py-4">
+    <nav class="mb-4" aria-label="Навигация архива"><a href="/">← {{ project_name }}</a></nav>
+    <h1>HTML-архив матчей</h1>
+    <p>{{ project_description }}</p>
+    <p>Сохранённые исторические данные. Неизвестные значения отмечены явно.</p>
+    <form action="/archive" method="get" class="row g-3 my-3">
+      <div class="col-md-7">
+        <label class="form-label" for="team">Команда</label>
+        <input class="form-control" id="team" name="team" value="{{ team }}" placeholder="Часть названия команды">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="limit">Строк на странице (1–200)</label>
+        <input class="form-control" id="limit" name="limit" type="number" min="1" max="200" value="{{ limit }}">
+      </div>
+      <div class="col-md-2 d-flex align-items-end"><button class="btn btn-success" type="submit">Найти</button></div>
+    </form>
+    <p>Фильтр: {{ team or 'все команды' }}. Найдено: {{ total }}. Показано: {{ matches | length }}.</p>
+    <p id="archive-caption" class="text-secondary">История матчей из существующей базы</p>
+    <div class="table-responsive">
+      <table class="table table-striped align-middle" aria-describedby="archive-caption">
+        <thead><tr><th scope="col">Матч</th><th scope="col">Дата и часовой пояс</th><th scope="col">Турнир</th><th scope="col">Победитель</th><th scope="col">JSON</th></tr></thead>
+        <tbody>
+          {% for match in matches %}
+          <tr>
+            <td data-label="Матч">{{ match.team_a_name }} — {{ match.team_b_name }}</td>
+            <td data-label="Дата">{{ match.started_at.isoformat() }}</td>
+            <td data-label="Турнир">{{ match.tournament_name or 'Нет данных' }}</td>
+            <td data-label="Победитель">{{ match.winner_name or 'Нет данных' }}</td>
+            <td data-label="JSON"><a href="{{ url_for('get_match', source=match.source, source_match_id=match.source_match_id) }}">Матч {{ match.source_match_id }}</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="archive-empty">Матчи не найдены.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <ul>
+      <li><a href="/">Интерактивная история матчей</a></li>
+      <li><a href="/api/matches">Те же записи в JSON</a></li>
+    </ul>
+    <p><img class="project-mascot" src="{{ url_for('static', path='img/cat.svg') }}" width="40" height="40" alt="Кот — талисман учебного проекта"> Университетский проект {{ project_name }}</p>
+  </main>
+</body>
+</html>

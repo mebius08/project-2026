@@ -4,8 +4,9 @@ import os
 from pathlib import Path
 from typing import Annotated, Literal, Protocol, cast, runtime_checkable
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
@@ -157,6 +158,9 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
     )
     application.state.repository = repository
     application.include_router(router)
+    application.mount(
+        "/static", StaticFiles(directory=Path(__file__).with_name("static")), name="static"
+    )
 
     @application.get("/", response_class=HTMLResponse)
     def index(request: Request) -> HTMLResponse:
@@ -166,6 +170,27 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
             context={
                 "project_name": PROJECT_NAME,
                 "project_description": PROJECT_DESCRIPTION,
+            },
+        )
+
+    @application.get("/archive", response_class=HTMLResponse)
+    def archive(
+        request: Request,
+        repository: Annotated[MatchRepository, Depends(get_repository)],
+        team: str = "",
+        limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    ) -> HTMLResponse:
+        matches = repository.list_historical_matches()
+        query = team.strip().casefold()
+        selected = [match for match in matches if not query or any(
+            query in name.casefold() for name in (match.team_a_name, match.team_b_name)
+        )]
+        return templates.TemplateResponse(
+            request=request,
+            name="archive.html",
+            context={
+                "project_name": PROJECT_NAME, "project_description": PROJECT_DESCRIPTION,
+                "matches": selected[:limit], "total": len(selected), "team": team, "limit": limit,
             },
         )
 
