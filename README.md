@@ -18,6 +18,11 @@ The course implementation and task mapping are documented in
 [Practices L2-L6](docs/university-practices.md). FastAPI is used as permitted in
 L4/L5; the container listens on **5001**. The existing host port stays **8000**.
 
+This repository covers the project-specific requirements. Separate Classroom
+practice assignments are graded in their own assigned repositories: passing
+this project's CI does not submit those assignments. See the submission map in
+the practice guide before checking individual laboratory marks.
+
 For a small web-only development environment (no replay/ML dependencies):
 
 ```bash

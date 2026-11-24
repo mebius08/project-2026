@@ -7,6 +7,22 @@ call the project repository `project-2026`. The existing local folder can remain
 Classroom examples are adapted to Dota match analytics. FastAPI
 is explicitly permitted in L4/L5; a second Flask application is not required.
 
+## Project and practice submissions are separate
+
+| Work | Repository used for submission |
+|---|---|
+| Dota project / Project CI (Task 9) | `mebius08/project-2026`, branch `university` |
+| Individual L5/L6 practice Tasks 1-8 | The assigned Classroom repository; the existing one is [ci-tests-2026-w-mebius08](https://github.com/CS-intro-with-Python/ci-tests-2026-w-mebius08), branch `main` |
+| JSON/Docker practice | A separate repository issued by the `docker-json-2026-th` Classroom assignment; it is not created by renaming this project |
+
+The project adaptations below do not replace the literal practice hand-ins.
+In particular, `hello.yml`, `python.yml`, `ci.yml`, `hello.py` and the books HTTP
+tests belong in the CI practice repository for its Tasks 4-8, even though the
+Dota project has its own equivalent CI and HTTP tests. Check the assigned
+repository, branch and revision when reconciling course results. A green run in
+this project alone does not establish that an individual laboratory was handed in
+or that an assessment snapshot has been updated.
+
 ## What corresponds to the practice tasks
 
 | Practice | Implementation in this project | Check |
