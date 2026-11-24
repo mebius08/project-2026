@@ -1,7 +1,9 @@
 # Dota 2 Analytics — project-2026
 
 Course repository: [mebius08/project-2026](https://github.com/mebius08/project-2026).
-Course work is developed on the `university` branch. An existing local checkout
+Course work is developed on the default `university` branch, so a normal clone
+includes the course server and CI. The older `master` branch remains available.
+An existing local checkout
 may still be named `dota-betting-autopilot`; its folder does not need to be moved.
 
 ## About

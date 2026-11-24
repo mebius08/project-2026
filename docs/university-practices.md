@@ -1,7 +1,9 @@
 # Practices L2-L6 in the main project
 
 The project repository is [mebius08/project-2026](https://github.com/mebius08/project-2026),
-branch `university`. The name follows L3 Task 9 and L4 Task 9, which explicitly
+default branch `university`. A normal clone therefore includes `app.py` and
+`.github/workflows/ci.yml`; the older `master` branch is preserved. The name
+follows L3 Task 9 and L4 Task 9, which explicitly
 call the project repository `project-2026`. The existing local folder can remain
 `dota-betting-autopilot`; `origin` points to the renamed GitHub repository.
 Classroom examples are adapted to Dota match analytics. FastAPI
